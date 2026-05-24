@@ -68,6 +68,11 @@ local outfits = {
 		name = "Glorpian Army",
 		item = "minecraft:emerald",
 	},
+	{
+		texture = textures["main_texture_niko"],
+		name = "Niko",
+		item = "minecraft:nether_star",
+	},
 }
 
 local yaw
