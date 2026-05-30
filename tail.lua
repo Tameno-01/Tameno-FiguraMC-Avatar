@@ -57,8 +57,8 @@ end
 
 function events.tick()
 	local root_mat = RawParts.tail_root:partToWorldMatrix()
-	local back = Utils.deaugmented(root_mat:getColumn(3))
-	local up = Utils.deaugmented(root_mat:getColumn(2))
+	local back = root_mat:getColumn(3).xyz
+	local up = root_mat:getColumn(2).xyz
 	for i, section in ipairs(tail_sections) do
 		section.prev_target_pos = section.target_pos
 		local ideal_pos_relative = (
@@ -67,7 +67,7 @@ function events.tick()
 		) * section.length
 		local parent_pos
 		if i == 1 then
-			parent_pos = Utils.deaugmented(root_mat:getColumn(4))
+			parent_pos = root_mat:getColumn(4).xyz
 		else
 			parent_pos = tail_sections[i - 1].target_pos
 		end

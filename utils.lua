@@ -22,10 +22,6 @@ function Utils.tif(condition, trueValue, falseValue)
 	end
 end
 
-function Utils.deaugmented(vect)
-	return vec(vect.x, vect.y, vect.z)
-end
-
 function Utils.match(value, tbl)
 	local func = tbl[value]
 	if func == nil then
