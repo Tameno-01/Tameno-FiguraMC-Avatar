@@ -4,6 +4,7 @@ local RawParts = require("model_parts/raw_parts")
 local Parts = {}
 
 Parts.main_model = PartClass:new(RawParts.main_model)
-Parts.Head = PartClass:new(RawParts.Head)
+Parts.neck = PartClass:new(RawParts.neck)
+Parts.head = PartClass:new(RawParts.head)
 
 return Parts

@@ -135,7 +135,8 @@ local function tickRot()
 	AnimFSM.params.yaw = yaw
 	AnimFSM.params.yawing = yawing
 	Parts.main_model:setRot(vec(0, yaw, 0))
-	Parts.Head:setRot(vec(rot.x, math.shortAngle(yaw, idealYaw), 0))
+	Parts.neck:setRot(vec(rot.x / 2, math.shortAngle(yaw, idealYaw), 0))
+	Parts.head:setRot(vec(rot.x / 2, 0, 0))
 end
 
 local function swingArm(arm)

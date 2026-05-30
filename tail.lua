@@ -1,4 +1,3 @@
-local Utils = require("utils")
 local RawParts = require("model_parts/raw_parts")
 
 local TAIL_SECTION_ANGLE_RAD = math.pi / 5
