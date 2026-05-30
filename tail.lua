@@ -1,30 +1,27 @@
 local Utils = require("utils")
+local RawParts = require("model_parts/raw_parts")
 
 local TAIL_SECTION_ANGLE_RAD = math.pi / 5
 local STIFFNESS = 0.5
 local DAMPING_FACTOR = 0.6
 
-local tail_root = models.main.root.Hips.TailRoot
-local tail_1 = tail_root.Tail1
-local tail_2 = tail_1.Tail2
-local tail_3 = tail_2.Tail3
-local tail_leaf = tail_3.TailLeaf
+
 
 local tail_sections = {
 	{
-		parent = tail_root,
-		part = tail_1,
-		leaf = tail_2,
+		parent = RawParts.tail_root,
+		part = RawParts.tail_1,
+		leaf = RawParts.tail_2,
 	},
 	{
-		parent = tail_1,
-		part = tail_2,
-		leaf = tail_3,
+		parent = RawParts.tail_1,
+		part = RawParts.tail_2,
+		leaf = RawParts.tail_3,
 	},
 	{
-		parent = tail_2,
-		part = tail_3,
-		leaf = tail_leaf,
+		parent = RawParts.tail_2,
+		part = RawParts.tail_3,
+		leaf = RawParts.tail_leaf,
 	},
 }
 
@@ -59,7 +56,7 @@ function events.entity_init()
 end
 
 function events.tick()
-	local root_mat = tail_root:partToWorldMatrix()
+	local root_mat = RawParts.tail_root:partToWorldMatrix()
 	local back = Utils.deaugmented(root_mat:getColumn(3))
 	local up = Utils.deaugmented(root_mat:getColumn(2))
 	for i, section in ipairs(tail_sections) do
