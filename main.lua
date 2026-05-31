@@ -2,6 +2,7 @@ local AnimClass = require("anim/anim_class")
 local AnimFSM = require("anim/anim_fsm")
 local PartClass = require("model_parts/part_class")
 local Parts = require("model_parts/parts")
+local StateSynch = require("other_libs/state_synch")
 local Utils = require("other_libs/utils")
 
 local MAX_YAW_DIFF = 70
@@ -56,6 +57,7 @@ local emotes = {
 		item = "minecraft:turtle_helmet",
 	},
 }
+
 
 local outfits = {
 	{
@@ -191,7 +193,7 @@ end
 local function tickEmote()
 	if host:isHost() then
 		if shouldStopEmote() then
-			pings.stopEmote()
+			StateSynch.setState("emote", 0)
 		end
 	end
 	Parts.main_model:setRot(vec(0, yaw, 0))
@@ -200,6 +202,32 @@ end
 function events.entity_init()
 	yaw = player:getRot().y
 end
+
+StateSynch.newState("emote", 0, function(emote_idx)
+	if emote_idx == 0 then
+		emoting = false
+		if host:isHost() then
+			host:setActionbar("Emote stopped.")
+		end
+	else
+		queueTickFunc(function()
+			startEmote(emotes[emote_idx])
+		end)
+	end
+end)
+
+StateSynch.newState("outfit", 1, function(outfit_idx)
+	local outfit = outfits[outfit_idx]
+	local texture = outfit.texture
+	Utils.forAllChildrenRecursive(Parts.main_model.part, function(part)
+		if part:getType() == "CUBE" then
+			part:setPrimaryTexture("Custom", texture)
+		end
+	end)
+	if host:isHost() then
+		host:setActionbar("Switched outfit to: " .. outfit.name)
+	end
+end)
 
 function events.tick()
 	AnimClass.tickStart()
@@ -218,6 +246,9 @@ function events.tick()
 	end
 	AnimFSM.tickEnd()
 	PartClass.tickEnd()
+	if host:isHost() then
+		StateSynch.tick()
+	end
 end
 
 function events.render(delta, ctx, mtrx)
@@ -226,32 +257,6 @@ function events.render(delta, ctx, mtrx)
 	end
 	AnimClass.render(delta)
 	PartClass.render(delta)
-end
-
-function pings.startEmote(emote_idx)
-	queueTickFunc(function()
-		startEmote(emotes[emote_idx])
-	end)
-end
-
-function pings.stopEmote()
-	emoting = false
-	if host:isHost() then
-		host:setActionbar("Emote stopped.")
-	end
-end
-
-function pings.setTexture(outfit_idx)
-	local outfit = outfits[outfit_idx]
-	local texture = outfit.texture
-	Utils.forAllChildrenRecursive(Parts.main_model.part, function(part)
-		if part:getType() == "CUBE" then
-			part:setPrimaryTexture("Custom", texture)
-		end
-	end)
-	if host:isHost() then
-		host:setActionbar("Switched outfit to: " .. outfit.name)
-	end
 end
 
 if host:isHost() then
@@ -265,7 +270,7 @@ if host:isHost() then
 		:title(emote.name)
 		:item(emote.item)
 		:onLeftClick(function()
-			pings.startEmote(i)
+			StateSynch.setState("emote", i)
 		end)
 	end
 
@@ -288,7 +293,7 @@ if host:isHost() then
 		:title(outfit.name)
 		:item(outfit.item)
 		:onLeftClick(function()
-			pings.setTexture(i)
+			StateSynch.setState("outfit", i)
 		end)
 	end
 
