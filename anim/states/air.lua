@@ -1,4 +1,4 @@
-local Utils = require("utils")
+local Utils = require("other_libs/utils")
 local AnimState = require("anim/anim_state")
 
 local AIR_SPEED_BOUNDS = 0.42

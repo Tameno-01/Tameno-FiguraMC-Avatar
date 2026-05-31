@@ -2,7 +2,7 @@ local AnimClass = require("anim/anim_class")
 local AnimFSM = require("anim/anim_fsm")
 local PartClass = require("model_parts/part_class")
 local Parts = require("model_parts/parts")
-local Utils = require("utils")
+local Utils = require("other_libs/utils")
 
 local MAX_YAW_DIFF = 70
 local YAWING_SPEED = 15
@@ -32,10 +32,10 @@ local arm_blend_groups = {
 
 local arm_anims = {
 	LEFT = {
-		swing = AnimClass:new("swing_left_arm"),
+		swing = AnimClass.new("swing_left_arm"),
 	},
 	RIGHT = {
-		swing = AnimClass:new("swing_right_arm"),
+		swing = AnimClass.new("swing_right_arm"),
 	},
 }
 
@@ -93,7 +93,7 @@ end
 
 local function startEmote(emote)
 	AnimFSM.params.emote = emote.anim
-	AnimFSM:setState("emote")
+	AnimFSM.setState("emote")
 	if player:isLoaded() then
 		yaw = -player:getRot().y
 		yaw = yaw + 180
@@ -142,7 +142,7 @@ end
 local function swingArm(arm)
 	arm_swing_time_left[arm] = SWING_ARM_TIME
 	arm_anims[arm].swing:blend(1)
-	AnimClass:setGroupBlend(arm_blend_groups[arm], 0)
+	AnimClass.setGroupBlend(arm_blend_groups[arm], 0)
 end
 
 local function tickArm(arm)
@@ -152,7 +152,7 @@ local function tickArm(arm)
 		arm_swing_time_left[arm] = arm_swing_time_left[arm] - 1
 		local swing_blend = arm_swing_time_left[arm] / SWING_ARM_TIME
 		arm_anims[arm].swing:blend(swing_blend)
-		AnimClass:setGroupBlend(arm_blend_groups[arm], 1 - swing_blend)
+		AnimClass.setGroupBlend(arm_blend_groups[arm], 1 - swing_blend)
 	end
 	if player:getSwingArm() == this_hand and player:getSwingTime() == 0 then
 		swingArm(arm)
@@ -162,15 +162,15 @@ end
 local function tickAnimFsm()
 	local vel = player:getVelocity()
 	if player:isOnGround() then
-		AnimFSM:setState("ground")
+		AnimFSM.setState("ground")
 		if vec(vel.x, vel.z):length() > 0.0001 then
 			snap_yaw = true
 		end
 	else
-		if AnimFSM:getState() == "ground" and vel.y < 0.0001 then
-			AnimFSM:transitionTo("air", 10)
+		if AnimFSM.getState() == "ground" and vel.y < 0.0001 then
+			AnimFSM.transitionTo("air", 10)
 		else
-			AnimFSM:setState("air")
+			AnimFSM.setState("air")
 		end
 	end
 end
@@ -202,8 +202,8 @@ function events.entity_init()
 end
 
 function events.tick()
-	AnimClass:tickStart()
-	PartClass:tickStart()
+	AnimClass.tickStart()
+	PartClass.tickStart()
 	for _, func in ipairs(tick_queue) do
 		func()
 	end
@@ -216,16 +216,16 @@ function events.tick()
 		tickArm("RIGHT")
 		tickRot()
 	end
-	AnimFSM:tickEnd()
-	PartClass:tickEnd()
+	AnimFSM.tickEnd()
+	PartClass.tickEnd()
 end
 
 function events.render(delta, ctx, mtrx)
 	if ctx ~= "PAPERDOLL" and ctx ~= "RENDER" then
 		return
 	end
-	AnimClass:render(delta)
-	PartClass:render(delta)
+	AnimClass.render(delta)
+	PartClass.render(delta)
 end
 
 function pings.startEmote(emote_idx)

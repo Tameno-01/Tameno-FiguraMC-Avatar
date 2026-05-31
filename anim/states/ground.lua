@@ -1,5 +1,5 @@
 local AnimState = require("anim/anim_state")
-local Utils = require("utils")
+local Utils = require("other_libs/utils")
 
 local VANILLA_WALK_SPEEDS = {
 	STAND = 0.21585,

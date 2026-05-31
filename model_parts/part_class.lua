@@ -1,22 +1,21 @@
-local PartClass = {
-	parts = {},
-}
+local PartClass = {}
 
 PartClass.__index = PartClass
 
+local parts = {}
+
 -- static
-function PartClass:new(part)
+function PartClass.new(part)
 	local obj = {
 		part = part,
 	}
-	setmetatable(obj, self)
-	table.insert(self.parts, obj)
+	setmetatable(obj, PartClass)
+	table.insert(parts, obj)
 	return obj
 end
 
--- static
-function PartClass:tickStart()
-	for _, part in ipairs(self.parts) do
+function PartClass.tickStart()
+	for _, part in ipairs(parts) do
 		if part.rotation ~= nil then
 			part.rotation.prev = part.rotation.next
 			part.rotation.next = vec(0, 0, 0)
@@ -24,9 +23,8 @@ function PartClass:tickStart()
 	end
 end
 
--- static
-function PartClass:tickEnd()
-	for _, part in ipairs(self.parts) do
+function PartClass.tickEnd()
+	for _, part in ipairs(parts) do
 		if part.rotation ~= nil then
 			if part.rotation.prev == vec(0, 0, 0) and part.rotation.next == vec(0, 0, 0) then
 				part.rotation = nil
@@ -36,9 +34,8 @@ function PartClass:tickEnd()
 	end
 end
 
--- static
-function PartClass:render(delta)
-	for _, part in ipairs(self.parts) do
+function PartClass.render(delta)
+	for _, part in ipairs(parts) do
 		if part.rotation ~= nil then
 			part.part:setOffsetRot(math.lerpAngle(part.rotation.prev, part.rotation.next, delta))
 		end

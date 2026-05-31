@@ -1,4 +1,4 @@
-local Utils = require("utils")
+local Utils = require("other_libs/utils")
 
 -- A few lines of code here are yoinked from https://github.com/lua-gods/figura-libraries/blob/main/plushie/plushie.lua
 

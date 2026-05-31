@@ -3,8 +3,8 @@ local RawParts = require("model_parts/raw_parts")
 
 local Parts = {}
 
-Parts.main_model = PartClass:new(RawParts.main_model)
-Parts.neck = PartClass:new(RawParts.neck)
-Parts.head = PartClass:new(RawParts.head)
+Parts.main_model = PartClass.new(RawParts.main_model)
+Parts.neck = PartClass.new(RawParts.neck)
+Parts.head = PartClass.new(RawParts.head)
 
 return Parts
