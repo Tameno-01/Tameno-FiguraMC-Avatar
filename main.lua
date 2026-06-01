@@ -3,6 +3,7 @@ local AnimFSM = require("anim/anim_fsm")
 local PartClass = require("model_parts/part_class")
 local Parts = require("model_parts/parts")
 local StateSynch = require("other_libs/state_synch")
+local ActionWheelHandler = require("other_libs/action_wheel_handler")
 local Utils = require("other_libs/utils")
 
 local MAX_YAW_DIFF = 70
@@ -43,38 +44,6 @@ local arm_anims = {
 local arm_swing_time_left = {
 	LEFT = 0,
 	RIGHT = 0,
-}
-
-local emotes = {
-	{
-		anim = "dance_arona",
-		name = "Arona Dance",
-		item = "minecraft:light_blue_wool",
-	},
-	{
-		anim = "salute",
-		name = "Salute",
-		item = "minecraft:turtle_helmet",
-	},
-}
-
-
-local outfits = {
-	{
-		texture = textures["main_texture"],
-		name = "Default",
-		item = "minecraft:purple_wool",
-	},
-	{
-		texture = textures["main_texture_glorpian"],
-		name = "Glorpian Army",
-		item = "minecraft:emerald",
-	},
-	{
-		texture = textures["main_texture_niko"],
-		name = "Niko",
-		item = "minecraft:nether_star",
-	},
 }
 
 local yaw
@@ -193,7 +162,7 @@ end
 local function tickEmote()
 	if host:isHost() then
 		if shouldStopEmote() then
-			StateSynch.setState("emote", 0)
+			ActionWheelHandler.setState("emote", 0)
 		end
 	end
 	Parts.main_model:setRot(vec(0, yaw, 0))
@@ -203,31 +172,75 @@ function events.entity_init()
 	yaw = player:getRot().y
 end
 
-StateSynch.newState("emote", 0, function(emote_idx)
-	if emote_idx == 0 then
-		emoting = false
-		if host:isHost() then
-			host:setActionbar("Emote stopped.")
+if host:isHost() then
+	ActionWheelHandler.newPage("emotes", "main", "Emotes", "minecraft:armor_stand")
+end
+ActionWheelHandler.newState("emote", "emotes",
+	{
+		{
+			anim = "dance_arona",
+			name = "Arona Dance",
+			item = "minecraft:light_blue_wool",
+		},
+		{
+			anim = "salute",
+			name = "Salute",
+			item = "minecraft:turtle_helmet",
+		},
+	},
+	function(emote)
+		if emote == nil then
+			emoting = false
+		else
+			queueTickFunc(function()
+				startEmote(emote)
+			end)
 		end
-	else
-		queueTickFunc(function()
-			startEmote(emotes[emote_idx])
-		end)
-	end
-end)
+	end,
+	{
+		default_idx = 0,
+		allow_none = true,
+		message = "Started emote: NAME",
+		none_message = "Stopped Emote.",
+	}
+)
 
-StateSynch.newState("outfit", 1, function(outfit_idx)
-	local outfit = outfits[outfit_idx]
-	local texture = outfit.texture
-	Utils.forAllChildrenRecursive(Parts.main_model.part, function(part)
-		if part:getType() == "CUBE" then
-			part:setPrimaryTexture("Custom", texture)
-		end
-	end)
-	if host:isHost() then
-		host:setActionbar("Switched outfit to: " .. outfit.name)
-	end
-end)
+if host:isHost() then
+	ActionWheelHandler.newPage("outfits", "main", "Outfits", "minecraft:leather_chestplate")
+end
+ActionWheelHandler.newState("outfit", "outfits",
+	{
+		{
+			texture = textures["main_texture"],
+			name = "Default",
+			item = "minecraft:purple_wool",
+		},
+		{
+			texture = textures["main_texture_glorpian"],
+			name = "Glorpian Army",
+			item = "minecraft:emerald",
+		},
+		{
+			texture = textures["main_texture_niko"],
+			name = "Niko",
+			item = "minecraft:nether_star",
+		},
+	},
+	function(outfit)
+		local texture = outfit.texture
+		Utils.forAllChildrenRecursive(Parts.main_model.part, function(part)
+			if part:getType() == "CUBE" then
+				part:setPrimaryTexture("Custom", texture)
+			end
+		end)
+	end,
+	{
+		default_idx = 1,
+		allow_none = false,
+		message = "Set outfit to: NAME",
+		none_message = "Can't disable outfit, switch to default instead."
+	}
+)
 
 function events.tick()
 	AnimClass.tickStart()
@@ -259,6 +272,7 @@ function events.render(delta, ctx, mtrx)
 	PartClass.render(delta)
 end
 
+--[[
 if host:isHost() then
 
 	local main_page = action_wheel:newPage()
@@ -314,3 +328,4 @@ if host:isHost() then
 	action_wheel:setPage(main_page)
 
 end
+]]

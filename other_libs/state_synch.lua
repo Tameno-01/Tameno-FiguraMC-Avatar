@@ -14,7 +14,7 @@ function StateSynch.newState(name, initial_value, update_func)
 	}
 	pings["StateSynch_" .. name] = function(value)
 		if state.value ~= value then
-			update_func(value)
+			update_func(value, state.value)
 			state.value = value
 		end
 	end
