@@ -111,11 +111,7 @@ if host:isHost() then
 		local new_page = action_wheel:newPage()
 		pages[id] = new_page
 		local parent = pages[parent_id]
-		local action_idx = nil
-		if parent_id ~= "main" then
-			action_idx = #parent:getActions() - 1
-		end
-		parent:newAction(action_idx)
+		parent:newAction()
 			:setTitle(name)
 			:setItem(item)
 			:onLeftClick(function()
