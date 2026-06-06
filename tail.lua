@@ -39,8 +39,8 @@ local function renderTailSection(delta, section)
 	local inv_global_mat = global_mat:inverted()
 	local target_pos_local = inv_global_mat:apply(target_pos)
 	local target_vec = target_pos_local - (section.part:getPivot() - section.parent:getPivot())
-	local yaw = math.deg(math.atan2(target_vec.x, target_vec.z))
-	local pitch = -math.deg(math.atan2(target_vec.y, vec(target_vec.x, target_vec.z):length()))
+	local yaw = math.deg(math.atan(target_vec.x, target_vec.z))
+	local pitch = -math.deg(math.atan(target_vec.y, vec(target_vec.x, target_vec.z):length()))
 	section.part:setRot(vec(pitch, yaw, 0))
 end
 
