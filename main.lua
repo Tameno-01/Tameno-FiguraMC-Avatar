@@ -11,11 +11,6 @@ local MAX_YAW_DIFF = 70
 local YAWING_SPEED = 15
 local SWING_ARM_TIME = 3
 
-vanilla_model.ALL:setVisible(false)
-vanilla_model.HELD_ITEMS:setVisible(true)
-vanilla_model.HELMET_ITEM:setVisible(true)
-renderer:setRootRotationAllowed(false)
-
 local main_model = models.main
 
 function main_model:preRender()
@@ -175,6 +170,12 @@ function Emotes.stop()
 		emoting = false
 	end)
 end
+
+vanilla_model.ALL:setVisible(false)
+vanilla_model.HELD_ITEMS:setVisible(true)
+vanilla_model.HELMET_ITEM:setVisible(true)
+renderer:setRootRotationAllowed(false)
+avatar:store("color", "#a665b3")
 
 function events.entity_init()
 	yaw = player:getRot().y
