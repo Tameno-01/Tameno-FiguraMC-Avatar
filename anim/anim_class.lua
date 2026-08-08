@@ -7,6 +7,9 @@ AnimClass.__index = AnimClass
 local synch_groups = {}
 local blend_groups = {}
 local playing_anims = {}
+local queued_synch_group_time_sets = {}
+
+AnimClass.raw_anims = {}
 
 -- static
 -- params is a table that can contain the following fields:
@@ -39,6 +42,7 @@ function AnimClass.new(anim_name, params)
 		end
 		table.insert(blend_groups[group].anims, params)
 	end
+	AnimClass.raw_anims[anim_name] = params.anim
 	setmetatable(params, AnimClass)
 	return params
 end
@@ -49,6 +53,18 @@ function AnimClass.setSynchGroupSpeed(group, speed)
 	group_table.speed = speed
 	for anim, _ in pairs(group_table.playing) do
 		anim.anim:setSpeed(speed)
+	end
+end
+
+--static
+function AnimClass.setSynchGroupTime(group, time, internal)
+	local group_table = synch_groups[group]
+	if not internal and Utils.isEmpty(group_table.playing) then
+		queued_synch_group_time_sets[group] = time
+		return
+	end
+	for anim, _ in pairs(group_table.playing) do
+		anim.anim:setTime(time)
 	end
 end
 
@@ -77,6 +93,14 @@ function AnimClass.tickStart()
 	for _, anim in ipairs(to_delete) do
 		playing_anims[anim] = nil
 	end
+end
+
+--static
+function AnimClass.tickEnd()
+	for group, time in pairs(queued_synch_group_time_sets) do
+		AnimClass.setSynchGroupTime(group, time, true)
+	end
+	queued_synch_group_time_sets = {}
 end
 
 -- static

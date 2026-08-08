@@ -15,6 +15,15 @@ local anims = {
 	walk_right = AnimClass.new("walk_right", {synch_group = "locomotion"}),
 	walk_left_arm = AnimClass.new("walk_left_arm", {synch_group = "locomotion", blend_groups = {"left_arm"}}),
 	walk_right_arm = AnimClass.new("walk_right_arm", {synch_group = "locomotion", blend_groups = {"right_arm"}}),
+	run = AnimClass.new("run", {synch_group = "locomotion"}),
+	run_left_arm = AnimClass.new("run_left_arm", {synch_group = "locomotion", blend_groups = {"left_arm"}}),
+	run_right_arm = AnimClass.new("run_right_arm", {synch_group = "locomotion", blend_groups = {"right_arm"}}),
+	run_jump_left = AnimClass.new("run_jump_left", {synch_group = "run_jump_left"}),
+	run_jump_left_left_arm = AnimClass.new("run_jump_left_left_arm", {synch_group = "run_jump_left", blend_groups = {"left_arm"}}),
+	run_jump_left_right_arm = AnimClass.new("run_jump_left_right_arm", {synch_group = "run_jump_left", blend_groups = {"right_arm"}}),
+	run_jump_right = AnimClass.new("run_jump_right", {synch_group = "run_jump_right"}),
+	run_jump_right_left_arm = AnimClass.new("run_jump_right_left_arm", {synch_group = "run_jump_right", blend_groups = {"left_arm"}}),
+	run_jump_right_right_arm = AnimClass.new("run_jump_right_right_arm", {synch_group = "run_jump_right", blend_groups = {"right_arm"}}),
 	air_up = AnimClass.new("air_up"),
 	air_up_left_arm = AnimClass.new("air_up_left_arm", {blend_groups = {"left_arm"}}),
 	air_up_right_arm = AnimClass.new("air_up_right_arm", {blend_groups = {"right_arm"}}),
@@ -43,6 +52,8 @@ local anims = {
 local states = {
 	ground = require("anim/states/ground"),
 	air = require("anim/states/air"),
+	run = require("anim/states/run"),
+	run_jump = require("anim/states/run_jump"),
 	emote = require("anim/states/emote"),
 }
 local current_state = "ground"

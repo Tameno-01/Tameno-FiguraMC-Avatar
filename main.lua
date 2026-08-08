@@ -48,6 +48,10 @@ local snap_yaw = false
 
 local emoting = false
 
+local running = false
+
+local prev_velocity = vec(0, 0, 0)
+
 local tick_queue = {}
 
 local function queueTickFunc(func)
@@ -58,11 +62,29 @@ local function queueTickFunc(func)
 	end
 end
 
+local function runJump()
+	if AnimFSM.getState() == "run_jump" then
+		AnimFSM.params.run_jump_left = not AnimFSM.params.run_jump_left
+	else
+		AnimFSM.params.run_jump_left = AnimClass.raw_anims.run:getTime() >= 1
+	end
+end
+
 local function tickRot()
 	local rot = -player:getRot()
-	local idealYaw = rot.y + 180
-	idealYaw = idealYaw % 360
-	if snap_yaw then
+	local model_space_yaw = (rot.y + 180) % 360
+	local idealYaw
+	if running then
+		local vel = player:getVelocity().xz
+		if vel:length() < 0.0001 then
+			idealYaw = yaw
+		else
+			idealYaw = math.deg(math.atan(-vel.x, -vel.y))
+		end
+	else
+		idealYaw = model_space_yaw
+	end
+	if snap_yaw or running then
 		yaw = idealYaw
 		snap_yaw = false
 	else
@@ -88,7 +110,7 @@ local function tickRot()
 	AnimFSM.params.yaw = yaw
 	AnimFSM.params.yawing = yawing
 	Parts.main_model:setRot(vec(0, yaw, 0))
-	Parts.neck:setRot(vec(rot.x / 2, math.shortAngle(yaw, idealYaw), 0))
+	Parts.neck:setRot(vec(rot.x / 2, math.shortAngle(yaw, model_space_yaw), 0))
 	Parts.head:setRot(vec(rot.x / 2, 0, 0))
 end
 
@@ -114,13 +136,38 @@ end
 
 local function tickAnimFsm()
 	local vel = player:getVelocity()
-	if player:isOnGround() then
-		AnimFSM.setState("ground")
-		if vec(vel.x, vel.z):length() > 0.0001 then
+	local state = AnimFSM.getState()
+	if running then
+		if player:isOnGround() then
+			if state == "ground" then
+				AnimFSM.transitionTo("run", 5)
+			else
+				if state == "run_jump" then
+					if AnimFSM.params.run_jump_left then
+						AnimClass.setSynchGroupTime("locomotion", 0.7)
+					else
+						AnimClass.setSynchGroupTime("locomotion", 1.7)
+					end
+				end
+				AnimFSM.setState("run")
+			end
+		else
+			if state ~= "run_jump" then
+				runJump()
+				AnimFSM.setState("run_jump")
+			end
+		end
+	elseif player:isOnGround() then
+		if state == "run" then
+			AnimFSM.transitionTo("ground", 5)
+		else
+			AnimFSM.setState("ground")
+		end
+		if vel.xz:length() > 0.0001 then
 			snap_yaw = true
 		end
 	else
-		if AnimFSM.getState() == "ground" and vel.y < 0.0001 then
+		if state == "ground" and vel.y < 0.0001 then
 			AnimFSM.transitionTo("air", 10)
 		else
 			AnimFSM.setState("air")
@@ -148,6 +195,25 @@ local function tickEmote()
 		end
 	end
 	Parts.main_model:setRot(vec(0, yaw, 0))
+end
+
+local function tickRunning()
+	if player:isOnGround() then
+		running = player:isSprinting()
+	end
+	if running then
+		local rot = -player:getRot().y
+		local vel = player:getVelocity().xz
+		local running_rot = math.deg(math.atan(vel.x, vel.y))
+		if math.abs(math.shortAngle(rot, running_rot)) > MAX_YAW_DIFF then
+			running = false
+		end
+	end
+	if running and AnimFSM:getState() == "run_jump" then
+		if player:getVelocity().y > 0 and prev_velocity.y <= 0 then
+			runJump()
+		end
+	end
 end
 
 function Emotes.start(emote_state)
@@ -188,6 +254,7 @@ function events.tick()
 		func()
 	end
 	tick_queue = {}
+	tickRunning()
 	if emoting then
 		tickEmote()
 	else
@@ -197,10 +264,12 @@ function events.tick()
 		tickRot()
 	end
 	AnimFSM.tickEnd()
+	AnimClass.tickEnd()
 	PartClass.tickEnd()
 	if host:isHost() then
 		StateSynch.tick()
 	end
+	prev_velocity = player:getVelocity()
 end
 
 function events.render(delta, ctx, mtrx)
