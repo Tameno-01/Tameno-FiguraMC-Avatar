@@ -5,7 +5,7 @@ local RunState = {}
 local ANIMATION_SPEED = 14
 
 function RunState:tick(params)
-	local velocity = vectors.rotateAroundAxis(-params.yaw, player:getVelocity(), vec(0, 1, 0)).xz
+	local velocity = vectors.rotateAroundAxis(-params.yaw, params.smooth_speed, vec(0, 1, 0)).xz
 	local speed = velocity:length()
 	return {
 		blends = {

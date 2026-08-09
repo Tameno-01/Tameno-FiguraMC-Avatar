@@ -11,8 +11,9 @@ local MAX_YAW_DIFF = 70
 local YAWING_SPEED = 15
 local RUN_LEAN = 2
 local MAX_RUN_LEAN = 30
-local RUN_LEAN_STIFFNESS = 0.3
+local RUN_LEAN_STIFFNESS = 0.4
 local SWING_ARM_TIME = 3
+local POS_SMOOTHING_STIFFNESS = 0.5
 
 local main_model = models.main
 
@@ -54,7 +55,9 @@ local emoting = false
 local running = false
 local run_lean = 0
 
-local prev_velocity = vec(0, 0, 0)
+local smooth_pos
+local prev_smooth_pos
+local smooth_speed = vec(0, 0, 0)
 
 local tick_queue = {}
 
@@ -74,13 +77,20 @@ local function runJump()
 	end
 end
 
+local function tickSmoothing()
+	prev_smooth_pos = smooth_pos
+	smooth_pos = math.lerp(smooth_pos, player:getPos(), POS_SMOOTHING_STIFFNESS)
+	smooth_speed = smooth_pos - prev_smooth_pos
+	AnimFSM.params.smooth_speed = smooth_speed
+end
+
 local function tickRot()
 	local prev_yaw = yaw
 	local rot = -player:getRot()
 	local model_space_yaw = (rot.y + 180) % 360
 	local idealYaw
 	if running then
-		local vel = player:getVelocity().xz
+		local vel = smooth_speed.xz
 		if vel:length() < 0.0001 then
 			idealYaw = yaw
 		else
@@ -265,6 +275,7 @@ avatar:store("color", "#a665b3")
 
 function events.entity_init()
 	yaw = player:getRot().y
+	smooth_pos = player:getPos()
 end
 
 function events.tick()
@@ -274,6 +285,7 @@ function events.tick()
 		func()
 	end
 	tick_queue = {}
+	tickSmoothing()
 	tickRunning()
 	if emoting then
 		tickEmote()

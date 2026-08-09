@@ -21,7 +21,7 @@ local GroundState = {}
 function GroundState:tick(params)
 	local state = Utils.tif(player:isCrouching(), "CROUCH", "STAND")
 	local prefix = PREFIXES[state]
-	local velocity = vectors.rotateAroundAxis(-params.yaw, player:getVelocity(), vec(0, 1, 0))
+	local velocity = vectors.rotateAroundAxis(-params.yaw, params.smooth_speed, vec(0, 1, 0))
 	local abs_velocity = vec(math.abs(velocity.x), math.abs(velocity.z))
 	local speed = abs_velocity:length() / VANILLA_WALK_SPEEDS[state]
 	local sum_speed = abs_velocity.x + abs_velocity.y
