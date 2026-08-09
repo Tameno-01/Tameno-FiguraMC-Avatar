@@ -183,7 +183,7 @@ local function tickAnimFsm()
 			snap_yaw = true
 		end
 	else
-		if state == "ground" or state == "run" and vel.y < 0.0001 then
+		if (state == "ground" or state == "run") and vel.y < 0.0001 then
 			AnimFSM.transitionTo("air", 10)
 		else
 			AnimFSM.setState("air")
