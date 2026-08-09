@@ -13,7 +13,7 @@ local AirState = {}
 function AirState:tick(params)
 	local state = Utils.tif(player:isCrouching(), "CROUCH", "STAND")
 	local prefix = PREFIXES[state]
-	local speed = params.smooth_speed.y
+	local speed = player:getVelocity().y
 	local blends = {}
 	if speed > AIR_SPEED_BOUNDS then
 		blends[prefix .. "air_up"] = 1

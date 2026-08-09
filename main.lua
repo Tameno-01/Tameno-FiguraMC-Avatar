@@ -11,9 +11,9 @@ local MAX_YAW_DIFF = 70
 local YAWING_SPEED = 15
 local RUN_LEAN = 2
 local MAX_RUN_LEAN = 30
-local RUN_LEAN_STIFFNESS = 0.4
+local RUN_LEAN_STIFFNESS = 0.3
 local SWING_ARM_TIME = 3
-local POS_SMOOTHING_STIFFNESS = 0.5
+local POS_SMOOTHING_STIFFNESS = 0.3
 
 local main_model = models.main
 
