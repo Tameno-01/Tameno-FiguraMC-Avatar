@@ -9,6 +9,9 @@ local Utils = require("other_libs/utils")
 
 local MAX_YAW_DIFF = 70
 local YAWING_SPEED = 15
+local RUN_LEAN = 2
+local MAX_RUN_LEAN = 30
+local RUN_LEAN_STIFFNESS = 0.3
 local SWING_ARM_TIME = 3
 
 local main_model = models.main
@@ -49,6 +52,7 @@ local snap_yaw = false
 local emoting = false
 
 local running = false
+local run_lean = 0
 
 local prev_velocity = vec(0, 0, 0)
 
@@ -71,6 +75,7 @@ local function runJump()
 end
 
 local function tickRot()
+	local prev_yaw = yaw
 	local rot = -player:getRot()
 	local model_space_yaw = (rot.y + 180) % 360
 	local idealYaw
@@ -112,6 +117,17 @@ local function tickRot()
 	Parts.main_model:setRot(vec(0, yaw, 0))
 	Parts.neck:setRot(vec(rot.x / 2, math.shortAngle(yaw, model_space_yaw), 0))
 	Parts.head:setRot(vec(rot.x / 2, 0, 0))
+	if running then
+		local yaw_speed = math.shortAngle(prev_yaw, yaw)
+		local ideal_run_lean = yaw_speed * RUN_LEAN
+		if math.abs(ideal_run_lean) > MAX_RUN_LEAN then
+			ideal_run_lean = MAX_RUN_LEAN * math.sign(ideal_run_lean)
+		end
+		run_lean = math.lerp(run_lean, ideal_run_lean, RUN_LEAN_STIFFNESS)
+		Parts.root:setRot(vec(0, 0, run_lean))
+	else
+		run_lean = 0
+	end
 end
 
 local function swingArm(arm)
@@ -167,7 +183,7 @@ local function tickAnimFsm()
 			snap_yaw = true
 		end
 	else
-		if state == "ground" and vel.y < 0.0001 then
+		if state == "ground" or state == "run" and vel.y < 0.0001 then
 			AnimFSM.transitionTo("air", 10)
 		else
 			AnimFSM.setState("air")
@@ -198,21 +214,25 @@ local function tickEmote()
 end
 
 local function tickRunning()
-	if player:isOnGround() then
+	local jumped = player:getVelocity().y > 0 and prev_velocity.y <= 0
+	if player:isOnGround() or jumped then
 		running = player:isSprinting()
 	end
 	if running then
-		local rot = -player:getRot().y
-		local vel = player:getVelocity().xz
-		local running_rot = math.deg(math.atan(vel.x, vel.y))
-		if math.abs(math.shortAngle(rot, running_rot)) > MAX_YAW_DIFF then
+		if AnimFSM:getState() ~= "run_jump" and player:getVelocity().y < 0.0001 and not player:isOnGround() then
 			running = false
 		end
-	end
-	if running and AnimFSM:getState() == "run_jump" then
-		if player:getVelocity().y > 0 and prev_velocity.y <= 0 then
-			runJump()
+		if running then
+			local rot = -player:getRot().y
+			local vel = player:getVelocity().xz
+			local running_rot = math.deg(math.atan(vel.x, vel.y))
+			if math.abs(math.shortAngle(rot, running_rot)) > MAX_YAW_DIFF then
+				running = false
+			end
 		end
+	end
+	if running and AnimFSM:getState() == "run_jump" and jumped then
+		runJump()
 	end
 end
 
