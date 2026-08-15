@@ -3,8 +3,10 @@ local RawParts = require("model_parts/raw_parts")
 local TAIL_SECTION_ANGLE_RAD = math.pi / 5
 local STIFFNESS = 0.5
 local DAMPING_FACTOR = 0.6
-
-
+local LENGTH_STIFFNESS = 0.5
+local LENGTH_DAMPING = 2
+local INITIAL_HEIGHT = 0.5
+local INITIAL_HEIGHT_DIFFERENCE = 0.3
 
 local tail_sections = {
 	{
@@ -46,7 +48,8 @@ end
 
 function events.entity_init()
 	for i, section in ipairs(tail_sections) do
-		section.target_pos = player:getPos() + vec(0, 0.5 + 0.3 * i, 0)
+		section.target_pos = player:getPos() + vec(0, INITIAL_HEIGHT + INITIAL_HEIGHT_DIFFERENCE * i, 0)
+		section.prev_dist_to_parent = INITIAL_HEIGHT_DIFFERENCE
 		section.prev_target_pos = section.target_pos
 		function section.parent.midRender(delta)
 			renderTailSection(delta, section)
@@ -73,7 +76,19 @@ function events.tick()
 		local ideal_pos = parent_pos + ideal_pos_relative
 		local diff = ideal_pos - section.target_pos
 		section.speed = section.speed + diff * STIFFNESS
+		local length_vect = section.target_pos - parent_pos
+		local distance = length_vect:length()
+		local distance_accel_amount = section.length * back:length() - distance
+		distance_accel_amount = distance_accel_amount * LENGTH_STIFFNESS
+		local distance_speed = distance - section.prev_dist_to_parent
+		if math.sign(distance_accel_amount) ~= math.sign(distance_speed) then
+			distance_accel_amount = distance_accel_amount * LENGTH_DAMPING
+		end
+		local speed_len = section.speed:length()
+		section.speed = section.speed + length_vect:normalized() * distance_accel_amount
+		section.speed = section.speed:normalized() * speed_len
 		section.speed = section.speed * DAMPING_FACTOR
 		section.target_pos = section.target_pos + section.speed
+		section.prev_dist_to_parent = distance
 	end
 end
