@@ -47,6 +47,7 @@ local anims = {
 	crouch_air_down_left_arm = AnimClass.new("crouch_air_down_left_arm", {synch_group = "air", blend_groups = {"left_arm"}}),
 	crouch_air_down_right_arm = AnimClass.new("crouch_air_down_right_arm", {synch_group = "air", blend_groups = {"right_arm"}}),
 	dance_arona = AnimClass.new("dance_arona"),
+	dance_california_girls = AnimClass.new("dance_california_girls"),
 	salute = AnimClass.new("salute"),
 }
 local states = {

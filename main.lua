@@ -58,6 +58,7 @@ local run_lean = 0
 local smooth_pos
 local prev_smooth_pos
 local smooth_speed = vec(0, 0, 0)
+local prev_velocity = vec(0, 0, 0)
 
 local tick_queue = {}
 

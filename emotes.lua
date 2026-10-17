@@ -7,6 +7,11 @@ Emotes.emote_states = {
 		item = "minecraft:light_blue_wool",
 	},
 	{
+		anim = "dance_california_girls",
+		name = "California Girls Dance",
+		item = "minecraft:sugar",
+	},
+	{
 		anim = "salute",
 		name = "Salute",
 		item = "minecraft:turtle_helmet",
