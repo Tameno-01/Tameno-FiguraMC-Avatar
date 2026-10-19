@@ -1,10 +1,17 @@
 local AnimClass = require("anim/anim_class")
 local AnimFSM = require("anim/anim_fsm")
+local RawParts = require("model_parts/raw_parts")
 local PartClass = require("model_parts/part_class")
 local Parts = require("model_parts/parts")
 local StateSynch = require("other_libs/state_synch")
 local ActionWheelHandler = require("other_libs/action_wheel_handler")
 local Emotes = require("emotes")
+local AnimationMirror = require("animation_mirror/core")
+local BodyMaker = require("animation_mirror/body_maker/core")
+local HeadMaker = require("animation_mirror/body_maker/head/rigged")
+local TorsoMaker = require("animation_mirror/body_maker/torso/rigged")
+local ArmMaker = require("animation_mirror/body_maker/arm/rigged")
+local LegMaker = require("animation_mirror/body_maker/leg/digitigrade")
 local Utils = require("other_libs/utils")
 
 local MAX_YAW_DIFF = 70
@@ -15,7 +22,7 @@ local RUN_LEAN_STIFFNESS = 0.3
 local SWING_ARM_TIME = 3
 local POS_SMOOTHING_STIFFNESS = 0.3
 
-local main_model = models.main
+local main_model = RawParts.main_model
 
 function main_model:preRender()
 	if player:isLoaded() then
@@ -26,6 +33,16 @@ function main_model:preRender()
 		end
 	end
 end
+
+local am_head = HeadMaker.make(RawParts.head, RawParts.neck)
+local am_torso = TorsoMaker.make({RawParts.hips, RawParts.spine_1, RawParts.spine_2}, RawParts.neck)
+local am_left_arm = ArmMaker.make(RawParts.left_upper_arm, RawParts.left_lower_arm, RawParts.left_hand, false)
+local am_right_arm = ArmMaker.make(RawParts.right_upper_arm, RawParts.right_lower_arm, RawParts.right_hand, true)
+local am_left_leg = LegMaker.make(RawParts.left_upper_leg, RawParts.left_lower_leg_1, RawParts.left_lower_leg_2, RawParts.left_foot, false)
+local am_right_leg = LegMaker.make(RawParts.right_upper_leg, RawParts.right_lower_leg_1, RawParts.right_lower_leg_2, RawParts.right_foot, true)
+local am_body = BodyMaker.make(am_head, am_torso, am_left_arm, am_right_arm, am_left_leg, am_right_leg, RawParts.main_model)
+AnimationMirror.set_body(am_body)
+AnimationMirror.begin_being_source()
 
 local arm_blend_groups = {
 	LEFT = "left_arm",
