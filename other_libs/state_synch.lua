@@ -22,6 +22,10 @@ function StateSynch.newState(name, initial_value, update_func)
 	table.insert(states_list, name)
 end
 
+function StateSynch.getState(name, value)
+	return states[name].value
+end
+
 if host:isHost() then
 
 	function StateSynch.setState(name, value)

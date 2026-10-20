@@ -12,6 +12,7 @@ local HeadMaker = require("animation_mirror/body_maker/head/rigged")
 local TorsoMaker = require("animation_mirror/body_maker/torso/rigged")
 local ArmMaker = require("animation_mirror/body_maker/arm/rigged")
 local LegMaker = require("animation_mirror/body_maker/leg/digitigrade")
+local AnimationMirrorPlayerPicker = require("animation_mirror/player_picker")
 local Utils = require("other_libs/utils")
 
 local MAX_YAW_DIFF = 70
@@ -42,7 +43,6 @@ local am_left_leg = LegMaker.make(RawParts.left_upper_leg, RawParts.left_lower_l
 local am_right_leg = LegMaker.make(RawParts.right_upper_leg, RawParts.right_lower_leg_1, RawParts.right_lower_leg_2, RawParts.right_foot, true)
 local am_body = BodyMaker.make(am_head, am_torso, am_left_arm, am_right_arm, am_left_leg, am_right_leg, RawParts.main_model)
 AnimationMirror.set_body(am_body)
-AnimationMirror.begin_being_source()
 
 local arm_blend_groups = {
 	LEFT = "left_arm",
@@ -67,7 +67,7 @@ local yaw
 local yawing = false
 local snap_yaw = false
 
-local emoting = false
+local emoting_state = "NONE"
 
 local running = false
 local run_lean = 0
@@ -219,6 +219,24 @@ local function tickAnimFsm()
 	end
 end
 
+local function baseStartEmote()
+	AnimFSM.setState("emote")
+	if player:isLoaded() then
+		yaw = -player:getRot().y
+		yaw = yaw + 180
+		yaw = yaw % 360
+	end
+	vanilla_model.HELD_ITEMS:setVisible(false)
+end
+
+local function stopEmote()
+	vanilla_model.HELD_ITEMS:setVisible(true)
+	emoting_state = "NONE"
+	if AnimationMirror.get_current_state() == "SOURCE" then
+		AnimationMirror.stop()
+	end
+end
+
 local function shouldStopEmote()
 	if player:isSwingingArm() then
 		return true
@@ -235,7 +253,11 @@ end
 local function tickEmote()
 	if host:isHost() then
 		if shouldStopEmote() then
-			ActionWheelHandler.setState("emote", 0)
+			if emoting_state == "SOURCE" then
+				ActionWheelHandler.setState("emote", 0)
+			elseif emoting_state == "COPYING" then
+				StateSynch.setState("am_source", nil)
+			end
 		end
 	end
 	Parts.main_model:setRot(vec(0, yaw, 0))
@@ -267,22 +289,30 @@ end
 function Emotes.start(emote_state)
 	queueTickFunc(function()
 		AnimFSM.params.emote = emote_state.anim
-		AnimFSM.setState("emote")
-		if player:isLoaded() then
-			yaw = -player:getRot().y
-			yaw = yaw + 180
-			yaw = yaw % 360
-		end
-		vanilla_model.HELD_ITEMS:setVisible(false)
-		emoting = true
+		baseStartEmote()
+		AnimationMirror.begin_being_source()
+		emoting_state = "SOURCE"
 	end)
 end
 
 function Emotes.stop()
-	queueTickFunc(function()
-		vanilla_model.HELD_ITEMS:setVisible(true)
-		emoting = false
-	end)
+	queueTickFunc(stopEmote)
+end
+
+function AnimationMirror.state_change(from, to)
+	if from ~= "COPYING" and to == "COPYING" then
+		queueTickFunc(function()
+			AnimFSM.params.emote = nil
+			baseStartEmote()
+			emoting_state = "COPYING"
+			if host:isHost() then
+				host:setActionbar("Mirroring " .. world.getEntity(AnimationMirror.get_source_player_uuid()):getName())
+			end
+		end)
+	end
+	if from == "COPYING" and to ~= "COPYING" then
+		queueTickFunc(stopEmote)
+	end
 end
 
 vanilla_model.ALL:setVisible(false)
@@ -290,6 +320,33 @@ vanilla_model.HELD_ITEMS:setVisible(true)
 vanilla_model.HELMET_ITEM:setVisible(true)
 renderer:setRootRotationAllowed(false)
 avatar:store("color", "#a665b3")
+
+StateSynch.newState("am_source", nil, function(value)
+	if value == nil then
+		AnimationMirror.stop()
+	else
+		AnimationMirror.begin_copying(value)
+	end
+end)
+
+if host:isHost() then
+	keybinds:newKeybind("pick_player", "key.keyboard.x"):onPress(function()
+		if AnimationMirror.get_current_state() == "COPYING" then
+			StateSynch.setState("am_source", nil)
+		else
+			local uuid, err, entity = AnimationMirrorPlayerPicker.pick_player()
+			if uuid ~= nil then
+				StateSynch.setState("am_source", uuid)
+			else
+				if entity ~= nil then
+					host:setActionbar("Cannot mirror " .. entity:getName())
+				else
+					host:setActionbar(err)
+				end
+			end
+		end
+	end)
+end
 
 function events.entity_init()
 	yaw = player:getRot().y
@@ -305,7 +362,7 @@ function events.tick()
 	tick_queue = {}
 	tickSmoothing()
 	tickRunning()
-	if emoting then
+	if emoting_state ~= "NONE" then
 		tickEmote()
 	else
 		tickAnimFsm()

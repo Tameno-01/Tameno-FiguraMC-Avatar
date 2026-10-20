@@ -133,6 +133,9 @@ local function begin_copying(uuid)
 	if source_player_uuid == nil then
 		source_player_uuid = uuid
 	end
+	if source_player_uuid == avatar:getUUID() then
+		return false
+	end
 	if prev_source_player_uuid == source_player_uuid then
 		return false
 	end
@@ -145,7 +148,7 @@ local function begin_copying(uuid)
 		return false
 	end
 	avatar:store("AnimationMirror_set_pose_getter", set_pose_getter)
-	pcall(pose_getter_sender, player:getUUID())
+	pcall(pose_getter_sender, avatar:getUUID())
 	avatar:store("AnimationMirror_set_pose_getter", nil)
 	if pose_getter == nil then
 		return false

@@ -25,7 +25,7 @@ Emotes.state_config = {
 	none_message = "Stopped Emote.",
 }
 
-function Emotes.setState(emote_state)
+function Emotes.setState(emote_state, prev_emote_state)
 	if emote_state == nil then
 		Emotes.stop()
 	else
