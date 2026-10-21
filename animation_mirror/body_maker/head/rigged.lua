@@ -26,13 +26,13 @@ function api.make(
 	end
 	function output.apply_pose(pose, root, start)
 		if start ~= nil then
-		local global_head_mat = pose.head:augmented():translate(start:getColumn(4).xyz)
-		local parent = Utils.get_root_space_mat_raw_without_pivot_correction(pose_application_part:getParent(), root)
-		local head_mat = matrices.mat4()
-		head_mat:translate(-pose_application_part:getPivot())
-		head_mat = global_head_mat * head_mat
-		head_mat = parent:inverted() * head_mat
-		pose_application_part:setMatrix(head_mat)
+			local global_head_mat = pose.head:augmented():translate(start:getColumn(4).xyz)
+			local parent = Utils.get_root_space_mat_raw_without_pivot_correction(pose_application_part:getParent(), root)
+			local head_mat = matrices.mat4()
+			head_mat:translate(-pose_application_part:getPivot())
+			head_mat = global_head_mat * head_mat
+			head_mat = parent:inverted() * head_mat
+			pose_application_part:setMatrix(head_mat)
 		else
 			local parent_mat = Utils.get_root_space_mat_raw(pose_application_part:getParent(), root):deaugmented()
 			Utils.set_part_mat(pose_application_part, (parent_mat:inverted() * pose.head):augmented())

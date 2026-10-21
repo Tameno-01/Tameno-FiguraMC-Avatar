@@ -169,7 +169,6 @@ function api.precompute_ik_params(sections, config)
 			bend_twist_vect = section.bend_twist_vect,
 			angle = angle,
 			pre_ik_mat = pre_ik_mat,
-			inv_pre_ik_mat = pre_ik_mat:inverted(),
 			pre_adjust_rest_dir = section_vect:normalized()
 		})
 		accumulated_mat = accumulated_mat * pre_ik_mat
@@ -185,18 +184,22 @@ end
 
 function api.do_ik(params, target, bend_target, root, keep_pos)
 	local first_part = params.sections[1].part
+	local local_start_pos = vec(0, 0, 0)
+	local pre_ik_mat3 = matrices.mat3()
+	if keep_pos then
+		local pre_ik_mat4 = first_part:getPositionMatrixRaw()
+		local_start_pos = pre_ik_mat4:apply(first_part:getPivot()) - first_part:getPivot()
+		pre_ik_mat3 = pre_ik_mat4:deaugmented()
+	end
 	local parent_mat = api.get_root_space_mat_raw(first_part:getParent(), root):deaugmented()
 	local inv_parent_mat = parent_mat:inverted()
-	local starting_mat = inv_parent_mat
-	local local_start_pos = vec(0, 0, 0)
-	if keep_pos then
-		local_start_pos = first_part:getPositionMatrixRaw():apply(first_part:getPivot()) - first_part:getPivot()
-	end
+	local starting_mat = pre_ik_mat3
 	local start = api.get_root_space_mat_raw(first_part, root):getColumn(4).xyz
 	local diff = target:getColumn(4).xyz - start
 	local dir = diff:normalized()
-	local first_axis = api.perpendicular(params.rest_dir, dir)
-	local first_angle = api.angle_between(params.rest_dir, dir)
+	local local_rest_dir = parent_mat * params.rest_dir
+	local first_axis = api.perpendicular(local_rest_dir, dir)
+	local first_angle = api.angle_between(local_rest_dir, dir)
 	local first_part_mat = api.mat3_rotated_around_axis(first_angle, starting_mat, inv_parent_mat * first_axis)
 	local accumulated_mat = parent_mat * first_part_mat
 	local bend_target_vect = bend_target - start
@@ -242,6 +245,7 @@ function api.do_ik(params, target, bend_target, root, keep_pos)
 		if i ~= 1 then
 			local angle = section.angle * angle_multiplier
 			local part_mat = api.mat3_rotated_around_axis(angle, twist_matrices[i], accumulated_mat:inverted() * global_axis)
+			parent_mat = twist_matrices[i]
 			api.set_part_mat(section.part, part_mat:augmented())
 			accumulated_mat = accumulated_mat * part_mat
 		end

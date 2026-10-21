@@ -52,8 +52,12 @@ function api.make(
 		return pose
 	end
 	function output.apply_pose(pose, root)
-		local parent_mat = Utils.get_root_space_mat_raw(spine[1]:getParent(), root)
-		Utils.set_part_mat(spine[1], parent_mat:inverted() * (pose.hips:copy():translate(-spine[1]:getPivot())))
+		local parent_mat = Utils.get_root_space_mat_raw_without_pivot_correction(spine[1]:getParent(), root)
+		local mat = matrices.mat4()
+		mat:translate(-spine[1]:getPivot())
+		mat = pose.hips * mat
+		mat = parent_mat:inverted() * mat
+		spine[1]:setMatrix(mat)
 		Utils.do_ik(ik_params, pose.torso_top, pose.torso_bend_target, root, true)
 	end
 	function output.reset_pose()

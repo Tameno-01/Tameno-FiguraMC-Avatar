@@ -321,7 +321,7 @@ vanilla_model.HELMET_ITEM:setVisible(true)
 renderer:setRootRotationAllowed(false)
 avatar:store("color", "#a665b3")
 
-StateSynch.newState("am_source", nil, function(value)
+StateSynch.newState("am_source", AnimationMirror.get_source_player_uuid, function(value)
 	if value == nil then
 		AnimationMirror.stop()
 	else
