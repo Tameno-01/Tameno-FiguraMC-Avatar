@@ -1,13 +1,16 @@
 local Utils = require("./core_utils")
+local EventHandler = require("./core_event_handler")
 
 local api = {}
+
+api.events = EventHandler
+api.events.new("state_change")
+api.events.new("source_change")
 
 local current_state = "OFF"
 local source_player_uuid = nil
 local current_pose = nil
 local pose_getter = nil
-local state_change_functions = {}
-local source_change_functions = {}
 local body = nil
 
 -- this function will be given a body later in this script
@@ -63,9 +66,7 @@ local function change_state(to)
 			body.reset_pose()
 		end
 	end
-	for func, _ in pairs(state_change_functions) do
-		func(from, to)
-	end
+	api.events.state_change:emit(to, from)
 end
 
 local function source_render()
@@ -158,9 +159,7 @@ local function begin_copying(uuid)
 	end
 	avatar:store("AnimationMirror_source", uuid)
 	if prev_source_player_uuid ~= nil then
-		for func, _ in pairs(source_change_functions) do
-			func(prev_source_player_uuid, source_player_uuid)
-		end
+		api.events.source_change:emit(source_player_uuid, prev_source_player_uuid)
 	end
 	return true
 end
@@ -198,28 +197,21 @@ function api.begin_being_source()
 end
 
 function api.can_copy(uuid)
-	local player_vars = world.avatarVars()[uuid]
+	local source = api.get_others_source_uuid(uuid)
+	if source == nil then
+		return false
+	end
+	local player_vars = world.avatarVars()[source]
 	if player_vars == nil then
 		return false
 	end
-	if type(player_vars.AnimationMirror_is_allowed_to_copy) ~= "function" then
+	local player_is_allowed_to_copy = player_vars.AnimationMirror_is_allowed_to_copy
+	if type(player_is_allowed_to_copy) ~= "function" then
 		return false
 	end
-	local player_is_allowed_to_copy = player_vars.AnimationMirror_is_allowed_to_copy
-	if type(player_vars.AnimationMirror_source) == "string" then
-		local success, output = pcall(player_is_allowed_to_copy, player_vars.AnimationMirror_source)
-		if success and output then
-			return true
-		else
-			return false
-		end
-	elseif type(player_vars.AnimationMirror_send_pose_getter) == "function" then
-		local success, output = pcall(player_is_allowed_to_copy, uuid)
-		if success and output then
-			return true
-		else
-			return false
-		end
+	local success, output = pcall(player_is_allowed_to_copy, avatar:getUUID())
+	if success and output then
+		return true
 	end
 	return false
 end
@@ -258,35 +250,24 @@ function api.get_current_state()
 end
 
 function api.get_source_player_uuid()
+	if current_state == "SOURCE" then
+		return avatar:getUUID()
+	end
 	return source_player_uuid
 end
 
-function api.register_state_change_func(func)
-	state_change_functions[func] = true
-end
-
-function api.remove_state_change_func(func)
-	state_change_functions[func] = nil
-end
-
-function api.register_source_change_func(func)
-	source_change_functions[func] = true
-end
-
-function api.remove_source_change_func(func)
-	source_change_functions[func] = nil
-end
-
-local meta = {}
-
-function meta.__newindex(_, k, v)
-	if k == "state_change" then
-		api.register_state_change_func(v)
-	elseif k == "source_change" then
-		api.register_source_change_func(v)
+function api.get_others_source_uuid(uuid)
+	local player_vars = world.avatarVars()[uuid]
+	if player_vars == nil then
+		return nil
 	end
+	if type(player_vars.AnimationMirror_source) == "string" then
+		return player_vars.AnimationMirror_source
+	end
+	if type(player_vars.AnimationMirror_send_pose_getter) == "function" then
+		return uuid
+	end
+	return nil
 end
-
-setmetatable(api, meta)
 
 return api

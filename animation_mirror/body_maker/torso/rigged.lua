@@ -4,7 +4,7 @@ local api = {}
 
 function api.make(
 	spine,
-	neck
+	top
 )
 	local spine_count = #spine
 	local spine_center_idx = math.ceil(#spine / 2) + 1
@@ -31,7 +31,7 @@ function api.make(
 		accumulated_twist = accumulated_twist + leaf_twist
 	end
 	local ik_params = Utils.precompute_ik_params(sections, {
-		leaf = neck:getPivot(),
+		leaf = top:getPivot(),
 		leaf_twist_vect = vec(1, 0, 0),
 		leaf_forward_vect = vec(0, 1, 0),
 		keep_pos = true,
@@ -40,8 +40,8 @@ function api.make(
 	function output.get_pose(root)
 		local pose = {}
 		pose.hips = Utils.get_root_space_mat_raw(start_part, root)
-		pose.bend_target = Utils.get_root_space_mat_raw(center_part, root):getColumn(4).xyz
-		local top_pos = Utils.get_root_space_mat_raw(neck, root)
+		pose.bend_target = Utils.get_root_space_mat_raw(center_part, root):apply(vec(0, 0, 0.5))
+		local top_pos = Utils.get_root_space_mat_raw(top, root)
 		local top_basis = Utils.get_root_space_mat_raw(end_part, root)
 		pose.top = matrices.mat4(
 			top_basis:getColumn(1),
@@ -66,7 +66,7 @@ function api.make(
 		end
 	end
 	function output.get_top_pivot()
-		return neck:getPivot()
+		return top:getPivot()
 	end
 	function output.get_hips_pivot()
 		return spine[1]:getPivot()

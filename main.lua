@@ -299,8 +299,8 @@ function Emotes.stop()
 	queueTickFunc(stopEmote)
 end
 
-function AnimationMirror.state_change(from, to)
-	if from ~= "COPYING" and to == "COPYING" then
+function AnimationMirror.events.state_change(new, old)
+	if new == "COPYING" then
 		queueTickFunc(function()
 			AnimFSM.params.emote = nil
 			baseStartEmote()
@@ -310,7 +310,7 @@ function AnimationMirror.state_change(from, to)
 			end
 		end)
 	end
-	if from == "COPYING" and to ~= "COPYING" then
+	if old == "COPYING" then
 		queueTickFunc(stopEmote)
 	end
 end
@@ -323,7 +323,9 @@ avatar:store("color", "#a665b3")
 
 StateSynch.newState("am_source", AnimationMirror.get_source_player_uuid, function(value)
 	if value == nil then
-		AnimationMirror.stop()
+		if AnimationMirror.get_current_state() == "COPYING" then
+			AnimationMirror.stop()
+		end
 	else
 		AnimationMirror.begin_copying(value)
 	end

@@ -14,7 +14,7 @@ function StateSynch.newState(name, initial_value_or_getter, update_func)
 	if use_getter then
 		state.getter = initial_value_or_getter
 	else
-		state.value = initial_value
+		state.value = initial_value_or_getter
 		state.getter = function()
 			return state.value
 		end
@@ -33,7 +33,7 @@ function StateSynch.newState(name, initial_value_or_getter, update_func)
 	table.insert(states_list, name)
 end
 
-function StateSynch.getState(name, value)
+function StateSynch.getState(name)
 	return states[name].value
 end
 
@@ -52,7 +52,7 @@ if host:isHost() then
 			end
 			local state_name = states_list[state_list_idx]
 			local state = states[state_name]
-			pings["StateSynch_" .. state_name](state.value)
+			pings["StateSynch_" .. state_name](state.getter())
 			time_since_last_synch = 0
 		end
 	end
