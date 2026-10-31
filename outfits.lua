@@ -19,6 +19,11 @@ Outfits.outfit_states = {
 		name = "Niko",
 		item = "minecraft:nether_star",
 	},
+	{
+		texture = textures["main_texture_undead"],
+		name = "Undead",
+		item = "minecraft:skeleton_skull",
+	},
 }
 
 Outfits.state_config = {
