@@ -14,6 +14,14 @@ function Utils.isEmpty(tbl)
 	return true
 end
 
+function Utils.elementCount(tbl)
+	local output = 0
+	for _, _ in pairs(tbl) do
+		output = output + 1
+	end
+	return output
+end
+
 function Utils.tif(condition, trueValue, falseValue)
 	if condition then
 		return trueValue
@@ -38,6 +46,16 @@ function Utils.forAllChildrenRecursive(root, func)
 	for _, part in ipairs(root:getChildren()) do
 		Utils.forAllChildrenRecursive(part, func)
 	end
+end
+
+function Utils.splitStr(str, section_chars)
+	local output = {}
+	local section_count = math.ceil(#str / section_chars)
+	for i=1, section_count do
+		local section_start = section_chars * (i - 1) + 1
+		table.insert(output, string.sub(str, section_start, section_start + section_chars - 1))
+	end
+	return output
 end
 
 return Utils

@@ -375,9 +375,6 @@ function events.tick()
 	AnimFSM.tickEnd()
 	AnimClass.tickEnd()
 	PartClass.tickEnd()
-	if host:isHost() then
-		StateSynch.tick()
-	end
 	prev_velocity = player:getVelocity()
 end
 

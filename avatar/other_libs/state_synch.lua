@@ -1,10 +1,10 @@
 local StateSynch = {}
 
-local TIME_BETWEEN_SYNCHS = 10
+local TIME_BETWEEN_SYNCHS_MS = 500
 
 local states = {}
 local states_list = {}
-local time_since_last_synch = 0
+local last_synch_time = client.getSystemTime()
 local state_list_idx = 0
 
 function StateSynch.newState(name, initial_value_or_getter, update_func)
@@ -43,17 +43,21 @@ if host:isHost() then
 		pings["StateSynch_" .. name](value)
 	end
 
-	function StateSynch.tick()
-		time_since_last_synch = time_since_last_synch + 1
-		if time_since_last_synch == TIME_BETWEEN_SYNCHS then
-			state_list_idx = state_list_idx + 1
-			if state_list_idx > #states_list then
-				state_list_idx = 1
-			end
-			local state_name = states_list[state_list_idx]
-			local state = states[state_name]
-			pings["StateSynch_" .. state_name](state.getter())
-			time_since_last_synch = 0
+	local function synch()
+		state_list_idx = state_list_idx + 1
+		if state_list_idx > #states_list then
+			state_list_idx = 1
+		end
+		local state_name = states_list[state_list_idx]
+		local state = states[state_name]
+		pings["StateSynch_" .. state_name](state.getter())
+		last_synch_time = client.getSystemTime()
+	end
+
+	function events.render()
+		local time = client.getSystemTime()
+		if time - last_synch_time > TIME_BETWEEN_SYNCHS_MS then
+			synch()
 		end
 	end
 

@@ -12,7 +12,7 @@ if host:isHost() then
 
 end
 
-local synched_states = {}
+local all_states = {}
 
 local function registerSynchedState(name, states, update_func, default_idx)
 	StateSynch.newState("ActionWheel_" .. name, default_idx, function(state_idx, prev_state_idx)
@@ -28,11 +28,11 @@ local function registerSynchedState(name, states, update_func, default_idx)
 	end)
 end
 
-local addSynchedStateToWheel
+local addStateToWheel
 
 if host:isHost() then
 	
-	addSynchedStateToWheel = function(name, page_id, states, state_config)
+	addStateToWheel = function(name, page_id, states, host_update_func, state_config)
 		local page = pages[page_id]
 		local prev_active = state_config.default_idx
 		local state_table = {
@@ -45,7 +45,19 @@ if host:isHost() then
 				end
 				if state_config.allow_none == true then
 					state_table.state[prev_active].action:setToggled(false)
-					StateSynch.setState("ActionWheel_" .. name, 0)
+					if host_update_func == nil then
+						StateSynch.setState("ActionWheel_" .. name, 0)
+					else
+						local current = nil
+						if idx ~= 0 then
+							current = states[idx]
+						end
+						local prev = nil
+						if prev_active ~= 0 then
+							prev = states[prev_active]
+						end
+						host_update_func(current, prev)
+					end
 					prev_active = 0
 				end
 				if state_config.none_message ~= nil then
@@ -55,7 +67,19 @@ if host:isHost() then
 				if prev_active ~= 0 then
 					state_table.state[prev_active].action:setToggled(false)
 				end
-				StateSynch.setState("ActionWheel_" .. name, idx)
+				if host_update_func == nil then
+					StateSynch.setState("ActionWheel_" .. name, idx)
+				else
+					local current = nil
+					if idx ~= 0 then
+						current = states[idx]
+					end
+					local prev = nil
+					if prev_active ~= 0 then
+						prev = states[prev_active]
+					end
+					host_update_func(current, prev)
+				end
 				if idx == 0 then
 					if state_config.none_message ~= nil then
 						host:setActionbar(state_config.none_message)
@@ -84,7 +108,7 @@ if host:isHost() then
 				action:setToggled(true)
 			end
 		end
-		synched_states[name] = state_table
+		all_states[name] = state_table
 	end
 
 end
@@ -98,14 +122,18 @@ state_config is a table with the following fields:
 	none_message string
 }
 ]]
-function ActionWheelHandler.newState(name, page_id, states, update_func, state_config)
+function ActionWheelHandler.newSynchedState(name, page_id, states, update_func, state_config)
 	registerSynchedState(name, states, update_func, state_config.default_idx)
 	if host:isHost() then
-		addSynchedStateToWheel(name, page_id, states, state_config)
+		addStateToWheel(name, page_id, states, nil, state_config)
 	end
 end
 
 if host:isHost() then
+
+	function ActionWheelHandler.newHostState(name, page_id, states, update_func, state_config)
+		addStateToWheel(name, page_id, states, update_func, state_config)
+	end
 
 	function ActionWheelHandler.newPage(id, parent_id, name, item)
 		local new_page = action_wheel:newPage()
@@ -126,7 +154,7 @@ if host:isHost() then
 	end
 
 	function ActionWheelHandler.setState(name, idx)
-		synched_states[name].set(idx, true)
+		all_states[name].set(idx, true)
 	end
 
 	action_wheel:setPage(pages.main)

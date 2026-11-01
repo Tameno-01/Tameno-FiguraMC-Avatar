@@ -7,5 +7,7 @@ if host:isHost() then
 	ActionWheelHandler.newPage("outfits", "main", "Outfits", "minecraft:leather_chestplate")
 end
 
-ActionWheelHandler.newState("emote", "emotes", Emotes.emote_states, Emotes.setState, Emotes.state_config)
-ActionWheelHandler.newState("outfit", "outfits", Outfits.outfit_states, Outfits.setState, Outfits.state_config)
+ActionWheelHandler.newSynchedState("emote", "emotes", Emotes.emote_states, Emotes.setState, Emotes.state_config)
+if host:isHost() then
+	ActionWheelHandler.newHostState("outfit", "outfits", Outfits.outfit_states, Outfits.setState, Outfits.state_config)
+end

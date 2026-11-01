@@ -1,26 +1,27 @@
 local Utils = require("other_libs/utils")
+local AvatarConfig = require("avatar_config")
 local RawParts = require("model_parts/raw_parts")
+local TextureSwapper = require("texture_swapper")
 
 local Outfits = {}
 
 Outfits.outfit_states = {
 	{
-		texture = textures["main_texture"],
 		name = "Default",
 		item = "minecraft:purple_wool",
 	},
 	{
-		texture = textures["main_texture_glorpian"],
+		texture_path = "outfits/main_texture_glorpian.png",
 		name = "Glorpian Army",
 		item = "minecraft:emerald",
 	},
 	{
-		texture = textures["main_texture_niko"],
+		texture_path = "outfits/main_texture_niko.png",
 		name = "Niko",
 		item = "minecraft:nether_star",
 	},
 	{
-		texture = textures["main_texture_undead"],
+		texture_path = "outfits/main_texture_undead.png",
 		name = "Undead",
 		item = "minecraft:skeleton_skull",
 	},
@@ -34,12 +35,19 @@ Outfits.state_config = {
 }
 
 function Outfits.setState(outfit_state)
-	local texture = outfit_state.texture
-	Utils.forAllChildrenRecursive(RawParts.main_model, function(part)
-		if part:getType() == "CUBE" then
-			part:setPrimaryTexture("Custom", texture)
-		end
-	end)
+	local texture_path = outfit_state.texture_path
+	if texture_path == nil then
+		TextureSwapper.setTex(nil)
+	else
+		local stream = file:openReadStream(AvatarConfig.data_path .. texture_path)
+		local buffer = data:createBuffer()
+		buffer:readFromStream(stream)
+		stream:close()
+		buffer:setPosition(0)
+		local b64 = buffer:readBase64()
+		buffer:close()
+		TextureSwapper.setTex(b64)
+	end
 end
 
 return Outfits
