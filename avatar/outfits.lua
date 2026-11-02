@@ -25,6 +25,11 @@ Outfits.outfit_states = {
 		name = "Undead",
 		item = "minecraft:skeleton_skull",
 	},
+	{
+		texture_path = "outfits/main_texture_garma.png",
+		name = "Garma",
+		item = "minecraft:orange_wool",
+	},
 }
 
 Outfits.state_config = {
