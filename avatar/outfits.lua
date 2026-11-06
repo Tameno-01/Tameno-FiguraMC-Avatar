@@ -30,6 +30,11 @@ Outfits.outfit_states = {
 		name = "Garma",
 		item = "minecraft:orange_wool",
 	},
+	{
+		texture_path = "outfits/main_texture_mar.png",
+		name = "Mar",
+		item = "minecraft:red_wool",
+	},
 }
 
 Outfits.state_config = {
