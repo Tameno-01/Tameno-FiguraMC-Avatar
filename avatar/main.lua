@@ -238,6 +238,12 @@ local function stopEmote()
 end
 
 local function shouldStopEmote()
+	if player:getPose() == "CROUCHING" then
+		return false
+	end
+	if player:isCrouching() then
+		return false
+	end
 	if player:isSwingingArm() then
 		return true
 	end
@@ -259,6 +265,11 @@ local function tickEmote()
 				StateSynch.setState("am_source", nil)
 			end
 		end
+	end
+	if player:isCrouching() then
+		yaw = -player:getRot().y
+		yaw = yaw + 180
+		yaw = yaw % 360
 	end
 	Parts.main_model:setRot(vec(0, yaw, 0))
 end
