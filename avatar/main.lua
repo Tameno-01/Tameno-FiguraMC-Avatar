@@ -241,9 +241,6 @@ local function shouldStopEmote()
 	if player:getPose() == "CROUCHING" then
 		return false
 	end
-	if player:isCrouching() then
-		return false
-	end
 	if player:isSwingingArm() then
 		return true
 	end
@@ -266,7 +263,7 @@ local function tickEmote()
 			end
 		end
 	end
-	if player:isCrouching() then
+	if player:getPose() == "CROUCHING" then
 		yaw = -player:getRot().y
 		yaw = yaw + 180
 		yaw = yaw % 360
