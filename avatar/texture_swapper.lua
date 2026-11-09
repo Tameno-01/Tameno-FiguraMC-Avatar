@@ -41,7 +41,7 @@ if host:isHost() then
 		end
 		host_sections = Utils.splitStr(b64, 512)
 		host_tex_id = host_tex_id + 1
-		if host_tex_id > 255 then
+		if host_tex_id > 32767 then
 			host_tex_id = 1
 		end
 		section_idx_to_send = 1
