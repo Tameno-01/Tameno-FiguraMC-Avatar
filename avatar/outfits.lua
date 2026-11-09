@@ -35,6 +35,11 @@ Outfits.outfit_states = {
 		name = "Mar",
 		item = "minecraft:red_wool",
 	},
+	{
+		texture_path = "outfits/main_texture_blockbench.png",
+		name = "Blockbench",
+		item = "minecraft:crafting_table",
+	},
 }
 
 Outfits.state_config = {
