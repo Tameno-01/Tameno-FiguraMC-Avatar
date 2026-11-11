@@ -32,5 +32,22 @@ RawParts.tail_1 = RawParts.tail_root.Tail1
 RawParts.tail_2 = RawParts.tail_1.Tail2
 RawParts.tail_3 = RawParts.tail_2.Tail3
 RawParts.tail_leaf = RawParts.tail_3.TailLeaf
+RawParts.skirt = RawParts.hips.Skirt
+RawParts.skirt_front = RawParts.skirt.SkirtFront
+RawParts.skirt_front_leaf = RawParts.skirt_front.SkirtFrontLeaf
+RawParts.skirt_back = RawParts.skirt.SkirtBack
+RawParts.skirt_back_leaf = RawParts.skirt_back.SkirtBackLeaf
+RawParts.skirt_front_left = RawParts.skirt.SkirtFrontLeft
+RawParts.skirt_front_left_leaf = RawParts.skirt_front_left.SkirtFrontLeftLeaf
+RawParts.skirt_left = RawParts.skirt.SkirtLeft
+RawParts.skirt_left_leaf = RawParts.skirt_left.SkirtLeftLeaf
+RawParts.skirt_back_left = RawParts.skirt.SkirtBackLeft
+RawParts.skirt_back_left_leaf = RawParts.skirt_back_left.SkirtBackLeftLeaf
+RawParts.skirt_front_right = RawParts.skirt.SkirtFrontRight
+RawParts.skirt_front_right_leaf = RawParts.skirt_front_right.SkirtFrontRightLeaf
+RawParts.skirt_right = RawParts.skirt.SkirtRight
+RawParts.skirt_right_leaf = RawParts.skirt_right.SkirtRightLeaf
+RawParts.skirt_back_right = RawParts.skirt.SkirtBackRight
+RawParts.skirt_back_right_leaf = RawParts.skirt_back_right.SkirtBackRightLeaf
 
 return RawParts
