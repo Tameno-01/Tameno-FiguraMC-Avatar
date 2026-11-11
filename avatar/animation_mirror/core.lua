@@ -130,17 +130,17 @@ end
 local function begin_copying(uuid)
 	local prev_source_player_uuid = source_player_uuid
 	local player_vars = world.avatarVars()[uuid]
-	source_player_uuid = player_vars.AnimationMirror_source
-	if source_player_uuid == nil then
-		source_player_uuid = uuid
+	local new_source_player_uuid = player_vars.AnimationMirror_source
+	if new_source_player_uuid == nil then
+		new_source_player_uuid = uuid
 	end
-	if source_player_uuid == avatar:getUUID() then
+	if new_source_player_uuid == avatar:getUUID() then
 		return false
 	end
-	if prev_source_player_uuid == source_player_uuid then
+	if prev_source_player_uuid == new_source_player_uuid then
 		return false
 	end
-	player_vars = world.avatarVars()[source_player_uuid]
+	player_vars = world.avatarVars()[new_source_player_uuid]
 	if player_vars == nil then
 		return false
 	end
@@ -157,7 +157,8 @@ local function begin_copying(uuid)
 	if prev_source_player_uuid == nil then
 		events.RENDER:register(copying_render)
 	end
-	avatar:store("AnimationMirror_source", uuid)
+	source_player_uuid = new_source_player_uuid
+	avatar:store("AnimationMirror_source", source_player_uuid)
 	if prev_source_player_uuid ~= nil then
 		api.events.source_change:emit(source_player_uuid, prev_source_player_uuid)
 	end
