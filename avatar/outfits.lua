@@ -57,6 +57,14 @@ Outfits.outfit_states = {
 		name = "Maid",
 		item = "minecraft:brush",
 	},
+	{
+		texture_path = "outfits/been_main.png",
+		extras = {
+			skirt = "outfits/been_skirt.png",
+		},
+		name = "Been",
+		item = "minecraft:sweet_berries",
+	},
 }
 
 Outfits.state_config = {
