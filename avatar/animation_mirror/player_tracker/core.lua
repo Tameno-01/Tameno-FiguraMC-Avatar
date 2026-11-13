@@ -40,30 +40,34 @@ if host:isHost() then
 			players = world.getPlayers()
 			next_player = next(players, next_player)
 		end
-		local player_uuid = players[next_player]:getUUID()
-		seen_players[player_uuid] = true
-		missing_players[player_uuid] = nil
-		local can_copy = (
-			world.getEntity(player_uuid) ~= nil
-			and player_uuid ~= avatar:getUUID()
-			and AnimationMirror.can_copy(player_uuid)
-			and AnimationMirror.get_source_player_uuid() ~= AnimationMirror.get_others_source_uuid(player_uuid)
-		)
-		for _, tracker in ipairs(trackers) do
-			local data = tracker.active_data[player_uuid]
-			local is_active = data ~= nil
-			if can_copy ~= is_active then
-				if can_copy then
-					if tracker.create_func ~= nil then
-						tracker.active_data[player_uuid] = tracker.create_func(player_uuid)
+		local next_player_object = players[next_player]
+		if next_player_object ~= nil then
+			local player_uuid = next_player_object:getUUID()
+			seen_players[player_uuid] = true
+			missing_players[player_uuid] = nil
+			local can_copy = (
+				client.isHudEnabled()
+				and world.getEntity(player_uuid) ~= nil
+				and player_uuid ~= avatar:getUUID()
+				and AnimationMirror.can_copy(player_uuid)
+				and AnimationMirror.get_source_player_uuid() ~= AnimationMirror.get_others_source_uuid(player_uuid)
+			)
+			for _, tracker in ipairs(trackers) do
+				local data = tracker.active_data[player_uuid]
+				local is_active = data ~= nil
+				if can_copy ~= is_active then
+					if can_copy then
+						if tracker.create_func ~= nil then
+							tracker.active_data[player_uuid] = tracker.create_func(player_uuid)
+						else
+							tracker.active_data[player_uuid] = false
+						end
 					else
-						tracker.active_data[player_uuid] = false
+						if tracker.delete_func ~= nil then
+							tracker.delete_func(tracker.active_data[player_uuid])
+						end
+						tracker.active_data[player_uuid] = nil
 					end
-				else
-					if tracker.delete_func ~= nil then
-						tracker.delete_func(tracker.active_data[player_uuid])
-					end
-					tracker.active_data[player_uuid] = nil
 				end
 			end
 		end

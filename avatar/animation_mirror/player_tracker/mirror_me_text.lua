@@ -16,8 +16,8 @@ PlayerTracker.new(
 		data.part:remove()
 	end,
 	function(data, delta) -- render
-		data.part:setVisible(client.isHudEnabled())
 		if not data.player:isLoaded() then
+			data.part:setVisible(false)
 			return
 		end
 		data.part:setPos(data.player:getPos(delta) * 16 + vec(
