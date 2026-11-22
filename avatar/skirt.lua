@@ -1,10 +1,11 @@
 local RawParts = require("model_parts/raw_parts")
 
+local DOWN_NUDGE = 2
 local POS_MARGIN = 0.01
 local ANGLE_MARGIN = 12
 local MAX_INITIAL_ANGLE = 100
-local MULTIPLIER = 0.5
-local RAISE = 0.05
+local MULTIPLIER = 0.6
+local RAISE = 0.06
 
 local sides = {
 	left = {
@@ -23,6 +24,7 @@ local function get_leg_rotation(to_local, upper_leg_part, lower_leg_part)
 	local upper_leg_vec = to_local:apply(upper_leg_part:partToWorldMatrix():getColumn(4).xyz)
 	local lower_leg_vec = to_local:apply(lower_leg_part:partToWorldMatrix():getColumn(4).xyz)
 	local leg_vec = lower_leg_vec - upper_leg_vec
+	leg_vec.y = leg_vec.y - DOWN_NUDGE
 	leg_vec = leg_vec:normalized()
 	local x = 0
 	if math.abs(leg_vec.z) > POS_MARGIN then
