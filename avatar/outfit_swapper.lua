@@ -3,6 +3,7 @@ local Utils = require("other_libs/utils")
 local OutfitSwapper = {}
 
 local TIME_BETWEEN_SYNCHS_MS = 1000
+local CHUNK_SIZE = 400
 
 local received_sections = {}
 local received_tex_id = 0
@@ -40,7 +41,7 @@ if host:isHost() then
 			synch()
 			return
 		end
-		host_sections = Utils.splitStr(b64, 512)
+		host_sections = Utils.splitStr(b64, CHUNK_SIZE)
 		host_tex_id = host_tex_id + 1
 		if host_tex_id > 32767 then
 			host_tex_id = 1
